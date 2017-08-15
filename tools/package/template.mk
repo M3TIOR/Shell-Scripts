@@ -37,14 +37,15 @@
 #
 
 private template : build := \
-	$(if $(call sft_f,d,$(bindir)/template.sh),\
-		mkdir -p $(bindir)/template.sh;,);\
-	cp -rfu $(srcdir)/template.sh \
-		$(bindir)/template;\
+	@ php -f $(srcdir)/src/template.sh.php -- \
+		--version=`git log --pretty=format:"\%H" $(srcdir)/src/template.sh.php` --global-data=$(datadir)/m3tior/template.sh > $(bindir)/template; \
+	mkdir -p $(datadir)/m3tior/template.sh; \
+	cp -rfu $(foreach data,$(wildcard $(srcdir)/res/template.sh/*), $(data)) \
+		$(datadir)/m3tior/template.sh;
 
 private template : install := \
 	$(call sudo,\
-		cp -rfu
+		cp -rfu $(local_path)/BUILD $(prefix) \
 	)
 
 private template : uninstall := \
@@ -65,5 +66,5 @@ private template : tarball := \
 private template : archive := \
 	#innards
 
-template: $(localdir)/.tmp/.init $(srcdir)/template.sh;
-	$(call mode)
+template: $(local_path)/src/template.sh.php;
+	$(if ($(mode),build), $(build))

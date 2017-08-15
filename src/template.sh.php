@@ -1,5 +1,13 @@
 #!/bin/sh
 
+<?php
+	$opts = array(
+		"version:",
+		"global-data:"
+	);
+	$var = getopt(Null,$opts);
+?>
+
 # M3TIOR 2017
 #	Template file generator script:
 #	the whole point of this script is to aid in my production
@@ -15,7 +23,8 @@
 template(){						#subshell forces pathname expansion, if needs full paths
 	local SCRIPT_PATH;			SCRIPT_PATH=$(echo ${SCRIPT_PATH:-$PWD});
 	local USER_PATH;			USER_PATH=$(echo ~/.templates/);
-	local GLOBAL_PATH;			GLOBAL_PATH="/etc/m3tior/res/templates";
+	local GLOBAL_PATH;			GLOBAL_PATH=<?php echo $var["global-data"]?>;
+	local VERSION;				VERSION=<?php echo $var["version"]?>;
 	local OPTARG; 				OPTARG='';
 	local OPTIND; 				OPTIND=0;
 	local IFS; 					IFS=' ';

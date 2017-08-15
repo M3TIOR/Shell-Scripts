@@ -23,19 +23,16 @@ override local_path := $(file_path:/$(filename)=$(empty))
 #
 #
 ifdef mode
-	$(if ($(mode), install-sys),\
-		prefix ?= / \
+	$(if ($(mode), instal-sys),\
+		prefix ?= $(local_path)/BUILD/ \
 		mode := install \
 	)
 	$(if ($(mode), install-global),\
-		prefix ?= /usr \
+		prefix ?= /usr/ \
 		mode := install \
 	)
-	$(if ($(mode), install),\
-		prefix ?= /usr/local \
-	)
 endif
-prefix 			?= $(local_path)/BUILD
+prefix 			?= $(local_path)/BUILD/usr/local
 exec_prefix 	?= $(prefix)
 bindir 			?= $(exec_prefix)/bin
 sbindir			?= $(exec_prefix)/sbin
@@ -58,7 +55,8 @@ libdir 			?= $(exec_prefix)/lib
 lispdir			?= $(datarootdir)/emacs/site-lisp
 localedir 		?= $(datarootdir)/locale
 mandir			?= $(datarootdir)/man
-srcdir			?= $(local_path)/src
+srcdir			?= $(local_path)
+uninstallerdir	?= $(sysconfdir)/m3tior/uninstall
 DIRS			= $(prefix) \
 				$(exec_prefix) \
 				$(bindir) \
@@ -81,28 +79,36 @@ DIRS			= $(prefix) \
 				$(libdir) \
 				$(lispdir) \
 				$(localedir) \
-				$(mandir)
+				$(mandir) \
+				$(uninstallerdir)
 $(shell for path in $(DIRS); do mkdir -p $$path; done;)
 
 #
 # Script local EXECUTABLES
 #
-override sft_f := $(shell \
-	if [ -$(if $(findstring $(1),b c d e f g h k p r s u w x O G S),$(1),\
-		$(error Error: "$(1)" invalid file comparison parameter)) $(2) ];\
-	then echo "true"; fi;\
-)
+#override sft_f := $(shell \
+#	if [ -$(if \
+#		$(findstring $(1),b c d e f g h k p r s u w x O G S),\
+#		$(1),\
+#		$(error Error: "$(1)" invalid file comparison parameter)) $(2) ];\
+#	then echo "true"; fi;\
+#)
 
-override sfc_f := $(shell [ $(2) -$(if $(findstring $(1),nt ot ef),$(1),\
-		$(error Error: "$(1)" invalid file comparison parameter)) $(3) ];\
-	then echo "true"; fi;\
-)
+#override sfc_f := $(shell [ $(2) -$(if $(findstring $(1),nt ot ef),$(1),\
+#		$(error Error: "$(1)" invalid file comparison parameter)) $(3) ];\
+#	then echo "true"; fi;\
+#)
 
 override sudo := \
 	{ su -plc '$(1)' $$USER } \
 	&& \
-	{ echo "Login failed, exiting" }
+	{ echo "Login as superuser failed, exiting" }
 
+
+# Main segment of script:
+# this ensures packages exist before we try and build them
+override preload_packages := $(wildcard $(local_path)/tools/package/*.mk)
+#----------------------------------------------------------------------
 
 help: list ;
 	@ echo "To build individual packages:"
@@ -111,27 +117,19 @@ help: list ;
 	@ echo "\tmake all"
 	@ echo "if you wish to install, uninstall, purge, fix, or reinstall a package"
 	@ echo "\t'make mode='MODE' <package> ...' Where MODE is one of:"
+	@ echo "\t\tbuild\n\t\tbuild-global\n\t\tbuild-sys"
 	@ echo "\t\tinstall\n\t\tinstall-global\n\t\tinstall-sys"
-	@ echo "\t\tuninstall\n\t\tpurge\n\t\tbuild\n\t\treinstall"
-	@ echo "\t\tdeb\n\t\tarchive\n\t\ttarball"
+	@ echo "\n\t\tpurge\n\t\tuninstall\n\t\treinstall"
+	@ echo "\t\ttest\n\t\tdeb\n\t\tarchive\n\t\ttarball"
 
 list: ;
 	@ echo "The current packages available for install in this repository are..."
-	@ for package in $(foreach package,\
-		$(wildcard $(local_path)/package/*),\
-		package); do \
-		echo "\t$${package%.mk}"\
+	@ for package in $(preload_packages); do\
+		P=$${package%.mk}; echo "\t$${P##*/}";\
 	done;
 
-# Main segment of script:
-# this ensures packages exist before we try and build them
-override preload_packages := \
-$(foreach target,$(subst $(comma),\
-						$(space),\
-						$(wildcard $(local_path)/tools/package/*.mk)),\
-	$(target))
-#----------------------------------------------------------------------
 override candidates := $(call preload_packages)	# this saves our make targets
+override targets := $(foreach target,$(preload_packages),$())
 mode ?= build							# as the default, make only builds the projects
 include $(candidates)					# this line loads in all the other sub-scripts
 
