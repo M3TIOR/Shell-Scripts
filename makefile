@@ -4,35 +4,49 @@
 #
 #
 
-# Meta character because bork
-override comma := ,
-override empty :=
-override space := $(empty) $(empty)
-#Use these for making relative path refferences
-override relative_path := $(lastword $(MAKEFILE_LIST))
-override filename := $(lastword $(subst /,$(space),$(relative_path)))
-override file_path := $(abspath $(relative_path))
-override local_path := $(file_path:/$(filename)=$(empty))
+# NOTE:
+#	Because some essential variables exist, I need a facility to make
+#	them more prominent than standard variables. so (very complex much wow)
+#	I'm just making all of them UPPERCASE horray right! so easy to read!
+#	also it's less likely you'll accidentally name a variable like it since
+#	most people don't like to type with caps-lock on.
 #
-# Inherited from template script
-#--------------------------------------------------------------------
+
+# NOTE: PATH AND FILE REFFERENCES
+override FILE_RELATIVE := $(lastword $(MAKEFILE_LIST))
+override FILE_ABSOLUTE := $(abspath $(FILE_RELATIVE))
+override FILE := $(lastword $(subst /,$(SPACE),$(FILE_RELATIVE)))
+override PATH_RELATIVE := $(subst $(FILE),,$(FILE_RELATIVE))
+override PATH_ABSOLUTE := $(FILE_ABSOLUTE:/$(FILE)=$(EMPTY))
+
+# XXX: META-characters
+override COMMA := ,
+override EMPTY :=
+override SPACE := $(EMPTY) $(EMPTY)
+override define NEWLINE :=
+
+
+endef
+#
+# XXX: this must have two lines to function properly!!!
+#
 
 # for help: https://www.gnu.org/software/make/manual/html_node/Directory-Variables.html#Directory-Variables
 #
 # Script global paths
 #
-#
-ifdef mode
-	$(if ($(mode), instal-sys),\
-		prefix ?= $(local_path)/BUILD/ \
-		mode := install \
-	)
-	$(if ($(mode), install-global),\
-		prefix ?= /usr/ \
-		mode := install \
-	)
-endif
-prefix 			?= $(local_path)/BUILD/usr/local
+# This is borked atm... :
+#ifdef mode
+#	$(if ($(mode), build-sys),\
+#		prefix ?= / $\
+#		mode := build \
+#	)
+#	$(if ($(mode), build-global),\
+#		prefix ?= /usr/ \
+#		mode := build \
+#	)
+#endif
+prefix 			?= /usr/local
 exec_prefix 	?= $(prefix)
 bindir 			?= $(exec_prefix)/bin
 sbindir			?= $(exec_prefix)/sbin
@@ -55,59 +69,42 @@ libdir 			?= $(exec_prefix)/lib
 lispdir			?= $(datarootdir)/emacs/site-lisp
 localedir 		?= $(datarootdir)/locale
 mandir			?= $(datarootdir)/man
-srcdir			?= $(local_path)
+srcdir			?= $(PATH_ABSOLUTE)
 uninstallerdir	?= $(sysconfdir)/m3tior/uninstall
-DIRS			= $(prefix) \
-				$(exec_prefix) \
-				$(bindir) \
-				$(sbindir) \
-				$(libexecdir) \
-				$(datarootdir) \
-				$(datadir) \
-				$(sysconfdir) \
-				$(sharedstatedir) \
-				$(localstatedir) \
-				$(runstatedir) \
-				$(includedir) \
-				$(oldincludedir) \
-				$(docdir) \
-				$(infodir) \
-				$(htmldir) \
-				$(dvidir) \
-				$(pdfdir) \
-				$(psdir) \
-				$(libdir) \
-				$(lispdir) \
-				$(localedir) \
-				$(mandir) \
-				$(uninstallerdir)
-$(shell for path in $(DIRS); do mkdir -p $$path; done;)
 
-#
-# Script local EXECUTABLES
-#
-#override sft_f := $(shell \
-#	if [ -$(if \
-#		$(findstring $(1),b c d e f g h k p r s u w x O G S),\
-#		$(1),\
-#		$(error Error: "$(1)" invalid file comparison parameter)) $(2) ];\
-#	then echo "true"; fi;\
-#)
-
-#override sfc_f := $(shell [ $(2) -$(if $(findstring $(1),nt ot ef),$(1),\
-#		$(error Error: "$(1)" invalid file comparison parameter)) $(3) ];\
-#	then echo "true"; fi;\
-#)
-
-override sudo := \
-	{ su -plc '$(1)' $$USER } \
-	&& \
-	{ echo "Login as superuser failed, exiting" }
+# NOTE:
+# 	this is placed here to ensure all the build directories already exist
+#	before we try and do anything stupid, ex: putting shit where it needs to go.
+DIRS			= $(prefix) $(exec_prefix) $(bindir) $(sbindir) $(libexecdir) \
+				$(datarootdir) $(datadir) $(sysconfdir) $(sharedstatedir) \
+				$(localstatedir) $(runstatedir) $(includedir) $(oldincludedir) \
+				$(docdir) $(infodir) $(htmldir) $(dvidir) $(pdfdir) $(psdir) \
+				$(libdir) $(lispdir) $(localedir) $(mandir) $(uninstallerdir)
+$(shell for path in $(DIRS); do mkdir -p $(srcdir)/BUILD/$$path; done;)
 
 
 # Main segment of script:
 # this ensures packages exist before we try and build them
-override preload_packages := $(wildcard $(local_path)/tools/package/*.mk)
+override preload_packages := $(wildcard $(PATH_ABSOLUTE)/tools/package/*.mk)
+
+override candidates := $(call preload_packages)	# this saves our make targets
+override targets := \
+	$(foreach target,$(candidates),\
+		$(subst .mk,$(EMPTY),\
+			$(lastword $(subst /,$(SPACE),$(target)))\
+		)\
+	)
+# as the default, make only builds the projects
+# XXX: borked, seriously this syntax is killer...
+#		for some reason this won't work if you add whitespace before
+#		a comment. I'm assuming what's happening is the variable is being
+#		saved with the trailing whitespace... It should trim... ugh...
+export mode ?= build
+# this line loads in all the other sub-scripts
+include $(candidates)
+
+# Phony targets don't output files
+.PHONY: $(targets) all clean list help
 #----------------------------------------------------------------------
 
 help: list ;
@@ -118,9 +115,9 @@ help: list ;
 	@ echo "if you wish to install, uninstall, purge, fix, or reinstall a package"
 	@ echo "\t'make mode='MODE' <package> ...' Where MODE is one of:"
 	@ echo "\t\tbuild\n\t\tbuild-global\n\t\tbuild-sys"
-	@ echo "\t\tinstall\n\t\tinstall-global\n\t\tinstall-sys"
-	@ echo "\n\t\tpurge\n\t\tuninstall\n\t\treinstall"
-	@ echo "\t\ttest\n\t\tdeb\n\t\tarchive\n\t\ttarball"
+	@ echo "\t\tinstall"
+	@ echo "\t\tpurge\n\t\tuninstall\n\t\treinstall"
+	@ echo "\t\ttest\n\t\tdeb\n\t\tarchive\n\t\ttarball\n\t\t<custom>..."
 
 list: ;
 	@ echo "The current packages available for install in this repository are..."
@@ -128,17 +125,9 @@ list: ;
 		P=$${package%.mk}; echo "\t$${P##*/}";\
 	done;
 
-override candidates := $(call preload_packages)	# this saves our make targets
-override targets := $(foreach target,$(preload_packages),$())
-mode ?= build							# as the default, make only builds the projects
-include $(candidates)					# this line loads in all the other sub-scripts
-
-all: $(candidates);						# Build Everything
+all: $(targets); @ # Build Everything
 
 clean:
-	@rm -vrf $(local_path)/BUILD
-	@rm -vrf $(local_path)/.tmp/composite
-	@echo "Clean!"
-
-# Phony targets don't output files
-.PHONY: $(candidates) all clean list help
+	@ rm -vrf $(PATH_ABSOLUTE)/BUILD
+	@ rm -vrf $(PATH_ABSOLUTE)/.tmp/composite
+	@ echo "Clean!"

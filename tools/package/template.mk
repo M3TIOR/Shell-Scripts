@@ -1,6 +1,6 @@
 #!/usr/bin/make
 
-# CONTRIBUTOR CREDIT LINE
+# M3TIOR 2017
 #	notes...
 #
 
@@ -30,41 +30,63 @@
 # for help on canning: https://www.gnu.org/software/make/manual/make.html#Canned-Recipes
 
 # The line:
-#	local_path := <relative path to the main script>
+#	PATH_ABSOLUTE := <relative path to the main script>
 # should always be presumed to exist also, since this makefile is loaded
 # externally from the main repository makefile and can be used to
 # address files within the repo.
 #
 
-private template : build := \
-	@ php -f $(srcdir)/src/template.sh.php -- \
-		--version=`git log --pretty=format:"\%H" $(srcdir)/src/template.sh.php` --global-data=$(datadir)/m3tior/template.sh > $(bindir)/template; \
-	mkdir -p $(datadir)/m3tior/template.sh; \
-	cp -rfu $(foreach data,$(wildcard $(srcdir)/res/template.sh/*), $(data)) \
-		$(datadir)/m3tior/template.sh;
+# This line is here to provide the local filename for use in building the recipies
+# this way there's less redundant typing
+override package := $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
 
-private template : install := \
-	$(call sudo,\
-		cp -rfu $(local_path)/BUILD $(prefix) \
+private $(package) : build = \
+	@ \
+	VERSION=$$(git log --pretty=format:"%H" $(srcdir)/src/template.sh.php); \
+	GLOBAL_PATH=$(datadir)/m3tior/template.sh; \
+	php -f $(srcdir)/src/template.sh.php -- \
+		--version=$$VERSION \
+		--global-data=$$GLOBAL_PATH \
+	> $(srcdir)/BUILD/$(bindir)/template; $(NEWLINE)\
+	@ mkdir -p $(srcdir)/BUILD/$(datadir)/m3tior/template.sh; $(NEWLINE)\
+	@ cp -rfu \
+		$(foreach data,\
+			$(wildcard $(srcdir)/res/template.sh/*), $(data)) \
+		$(srcdir)/BUILD/$(datadir)/m3tior/template.sh;
+
+#while read line; do echo ; done < <(cp -rfuv ./test/derp ./test2); echo "~" >> ./test/derp
+private $(package) : install := \
+	@ \
+	while read line; do\
+		echo "test";\
+	done < <(cp -rfu $(srcdir)/BUILD /);
+
+private $(package) : uninstall := \
+	#NOT IMPLEMENTED
+
+private $(package) : reinstall := \
+	#NOT IMPLEMENTED
+
+private $(package) : purge := \
+	#NOT IMPLEMENTED
+
+private $(package) : deb := \
+	#NOT IMPLEMENTED
+
+private $(package) : tarball := \
+	#NOT IMPLEMENTED
+
+private $(package) : archive := \
+	#NOT IMPLEMENTED
+
+private $(package) : test := \
+	#NOT IMPLEMENTED
+
+$(package): $(PATH_ABSOLUTE)/src/template.sh.php
+	$(eval private $(package): bake = $$($(mode)))
+	$(if $(debug),\
+		$(subst @,,\
+			$(bake)\
+		),\
+		$(bake)\
 	)
-
-private template : uninstall := \
-	#innards
-
-private template : reinstall := \
-	#innards
-
-private template : purge := \
-	#innards
-
-private template : deb := \
-	#innards
-
-private template : tarball := \
-	#innards
-
-private template : archive := \
-	#innards
-
-template: $(local_path)/src/template.sh.php;
-	$(if ($(mode),build), $(build))

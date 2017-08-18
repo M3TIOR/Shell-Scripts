@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# M3TIOR 2017
+#
+#	Chroot INIT file:
+#		this file exists to provide path data and other variables for
+#		the testing chroot
+#
+
+# initial path define to enable appending
+PATH=				""; # executable path for sh
+LD_LIBRARY_PATH=	""; # path to linked libraries
+
+while getopts "" o; do
+	case $o; in
+
+		[?]);;
+	esac;
+done;
+
+# TEST ENVIRONMENT PATH
+PATH+= "/bin":
+PATH+= "/sbin":
+PATH+= "/usr/bin":
+PATH+= "/usr/sbin":
+PATH+= "/usr/games":
+PATH+= "/usr/local/bin":
+PATH+= "/usr/local/sbin":
+PATH+= "/usr/local/games":
+
+# SHADOWROOT PATH
+PATH+= "shadowroot/bin:":
+PATH+= "shadowroot/sbin:":
+PATH+= "shadowroot/usr/bin:":
+PATH+= "shadowroot/usr/sbin:":
+PATH+= "shadowroot/usr/games:":
+PATH+= "shadowroot/usr/local/bin:":
+PATH+= "shadowroot/usr/local/sbin:":
+PATH+= "shadowroot/usr/local/games:":

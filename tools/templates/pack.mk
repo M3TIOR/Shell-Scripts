@@ -22,47 +22,92 @@
 #	deb			- outputs the built project as a .deb package
 #	tarball 	- outputs the built project as a .tar archive
 #	archive		- outputs the built project as a .ar archive (gnu-make's builtin)
+#	test		- runs all tests for the project
 #
 
-# It's reccomended that you 'can' each of the build modes and use a conditional
+# It's recommended that you 'can' each of the build modes and use a conditional
 # within the actual recipie statement.
 #
 # for help on canning: https://www.gnu.org/software/make/manual/make.html#Canned-Recipes
+#
+# UPDATE: XXX
+#	Local 'canning' isn't a functional part of the makefile syntax so to make
+#	things debuggable, use multiline local variables in place of local cans
+#	a metacharacter called $(NEWLINE) exists as a line terminator so we can nest
+#	do exactly this. However, be aware this variable is inherited from the core
+#	makefile in the root.
+#
+#	Example:
+#
+#		private recipie : <mode> := \
+#			@ command $(NEWLINE) \ 	# don't forget that each subsequent
+#			@ for each in: do \		# line must be escaped to be a proper part
+#				commands \			# of the mode since it's being directly
+#			done; $(NEWLINE)\		# inserted into the recipie
+#			\
+#			@ other_command...		# and that the final line shouldn't be escaped
+#
+#
 
-private recipie : build := \
-	#innards
+# This line is here to provide the local filename for use in building the recipies
+# this way there's less redundant typing also opening the facility of using
+#
+#	make <package>
+#
+# for building packages easier...
+override PACKAGE := $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
 
-private recipie : install := \
-	#innards
 
-private recipie : uninstall := \
-	#innards
+private $(PACKAGE) : build := \
+	#NOT IMPLEMENTED
 
-private recipie : reinstall := \
-	#innards
+private $(PACKAGE) : install := \
+	#NOT IMPLEMENTED
 
-private recipie : purge := \
-	#innards
+private $(PACKAGE) : uninstall := \
+	#NOT IMPLEMENTED
 
-private recipie : deb := \
-	#innards
+private $(PACKAGE) : reinstall := \
+	#NOT IMPLEMENTED
 
-private recipie : tarball := \
-	#innards
+private $(PACKAGE) : purge := \
+	#NOT IMPLEMENTED
 
-private recipie : archive := \
-	#innards
+private $(PACKAGE) : deb := \
+	#NOT IMPLEMENTED
 
-recipe: ingredients;
-	#
-	# internals
-	#
-	#$(if ($(mode), build), $(build),)
-	#$(if ($(mode), install), $(install),)
-	#$(if ($(mode), uninstall), $(uninstall),)
-	#$(if ($(mode), reinstall), $(reinstall),)
-	#$(if ($(mode), purge), $(purge),)
-	#$(if ($(mode), deb), $(deb),)
-	#$(if ($(mode), tarball), $(tarball,)
-	#$(if ($(mode), archive), $(archive),)
-	$(call mode)
+private $(PACKAGE) : tarball := \
+	#NOT IMPLEMENTED
+
+private $(PACKAGE) : archive := \
+	#NOT IMPLEMENTED
+
+# NOTE:
+#	On building tests... Each test should be hosted within a chroot of the
+#	build directory with a symbolic link to the root directory for linking purposes.
+#	all projects in this repo should be able to stand on it's own two feet with it's
+#	dependencies
+#
+#	example:
+#		@ mkdir -p $(srcdir)/BUILD/shadowroot; $(NEWLINE)\
+#		@ mount -o bind / $(srcdir)/BUILD/shadowroot; $(NEWLINE)\
+#		TEST='
+#
+#		';\ # Can't have a newline here because we need to pass TEST
+#		chroot '$(srcdir)/BUILD/' "sh -i
+private $(PACKAGE) : test := \
+	#NOT IMPLEMENTED
+
+$(PACKAGE): ingredients;
+	@ # Enable's debugging...
+	@ # If you wish to see each line executed simply use:
+	@ #
+	@ #		make recipie ... debug=true
+	@ #
+	$(eval private $(PACKAGE): bake = $$($(mode)))
+	$(if $(debug),\
+		$(subst @,,\
+			$(bake)\
+		),\
+		$(bake)\
+	)

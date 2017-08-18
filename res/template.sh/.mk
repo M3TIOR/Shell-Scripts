@@ -5,18 +5,32 @@
 #	NOTE: about the makefile
 #
 
+# NOTE:
+#	Because some essential variables exist, I need a facility to make
+#	them more prominent than standard variables. so (very complex much wow)
+#	I'm just making all of them UPPERCASE horray right! so easy to read!
+#	also it's less likely you'll accidentally name a variable like it since
+#	most people don't like to type with caps-lock on.
+#
 
-#These meta characters enable parsing of space and comma in foreach
-#		THIS IS AN EVIL LANGUAGE
-override comma:= ,
-override empty:=
-override space:= $(empty) $(empty)
-#Use these for making relative path refferences
-override relative_path := $(lastword $(MAKEFILE_LIST))
-override filename := $(lastword $(subst /,$(space),$(relative_path)))
-override file_path := $(abspath $(relative_path))
-override local_path := $(file_path:/$(filename)=$(empty))
-#override current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path)))
+# NOTE: PATH AND FILE REFFERENCES
+override FILE := $(lastword $(subst /,$(SPACE),$(FILE_RELATIVE)))
+override FILE_RELATIVE := $(lastword $(MAKEFILE_LIST))
+override FILE_ABSOLUTE := $(abspath $(FILE_RELATIVE))
+override PATH_RELATIVE := $(subst $(FILE),,$(FILE_RELATIVE))
+override PATH_ABSOLUTE := $(FILE_ABSOLUTE:/$(FILE)=$(EMPTY))
+
+# XXX: META-characters
+override COMMA := ,
+override EMPTY :=
+override SPACE := $(EMPTY) $(EMPTY)
+override define NEWLINE :=
+
+
+endef
+#
+# XXX: this must have two lines to function properly!!!
+#
 
 
 # Phony targets don't output files
@@ -44,5 +58,5 @@ purge:
 	location/to/purge/script
 
 clean:
-	@rm -vrf $(current_dir)/BUILD
+	@rm -vrf $(PATH_ABSOLUTE)/BUILD
 	@echo "Clean!"
