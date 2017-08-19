@@ -1,6 +1,6 @@
 sudo: required
 
-language: php
+language: generic
 
 notifications: # set notification options
     email: false
@@ -12,7 +12,7 @@ branches:
 
 before_install:
     - sudo apt-get update
-    - sudo apt-get install make dash php7.0-cli
+    - sudo apt-get install make dash php-cli
 
 script:
     - echo "Building Repository"
