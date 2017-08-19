@@ -1,9 +1,6 @@
 sudo: required
 
-language: sh php makefile
-
-sh:
-    - ''
+language: php
 
 notifications: # set notification options
     email: false
