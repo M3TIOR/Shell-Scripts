@@ -13,8 +13,6 @@ branches:
 before_install:
     - sudo apt-get update
     - sudo apt-get install make dash
-
-script:
     - echo "Building Repository"
     - make all mode=build debug=true
     - make all mode=test debug=true
