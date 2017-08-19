@@ -82,7 +82,7 @@ private $(package) : archive := \
 private $(package) : test := \
 	#NOT IMPLEMENTED
 
-$(package): $(PATH_ABSOLUTE)/src/template.sh.php
+$(package): init $(PATH_ABSOLUTE)/src/template.sh.php
 	$(eval private $(package): bake = $$($(mode)))
 	$(if $(debug),\
 		$(subst @,,\

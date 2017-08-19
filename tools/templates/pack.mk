@@ -98,7 +98,7 @@ private $(PACKAGE) : archive := \
 private $(PACKAGE) : test := \
 	#NOT IMPLEMENTED
 
-$(PACKAGE): ingredients;
+$(PACKAGE): init <ingredients>;
 	@ # Enable's debugging...
 	@ # If you wish to see each line executed simply use:
 	@ #

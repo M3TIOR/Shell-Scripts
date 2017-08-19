@@ -75,12 +75,12 @@ uninstallerdir	?= $(sysconfdir)/m3tior/uninstall
 # NOTE:
 # 	this is placed here to ensure all the build directories already exist
 #	before we try and do anything stupid, ex: putting shit where it needs to go.
+# 	it's used within the 'init' recipie
 DIRS			= $(prefix) $(exec_prefix) $(bindir) $(sbindir) $(libexecdir) \
 				$(datarootdir) $(datadir) $(sysconfdir) $(sharedstatedir) \
 				$(localstatedir) $(runstatedir) $(includedir) $(oldincludedir) \
 				$(docdir) $(infodir) $(htmldir) $(dvidir) $(pdfdir) $(psdir) \
 				$(libdir) $(lispdir) $(localedir) $(mandir) $(uninstallerdir)
-$(shell for path in $(DIRS); do mkdir -p $(srcdir)/BUILD/$$path; done;)
 
 
 # Main segment of script:
@@ -104,8 +104,15 @@ export mode ?= build
 include $(candidates)
 
 # Phony targets don't output files
-.PHONY: $(targets) all clean list help
+.PHONY: $(targets) init all clean list help
 #----------------------------------------------------------------------
+
+init: ;
+	$(shell \
+		for path in $(DIRS); do \
+			mkdir -p $(srcdir)/BUILD/$$path; \
+		done;\
+	)
 
 help: list ;
 	@ echo "To build individual packages:"
@@ -125,7 +132,7 @@ list: ;
 		P=$${package%.mk}; echo "\t$${P##*/}";\
 	done;
 
-all: $(targets); @ # Build Everything
+all: init $(targets); @ # Build Everything
 
 clean:
 	@ rm -vrf $(PATH_ABSOLUTE)/BUILD
