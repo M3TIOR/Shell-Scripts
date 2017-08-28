@@ -1,13 +1,8 @@
 #!/usr/bin/make
 
-# CONTRIBUTOR CREDIT LINE
-#	notes...
-#
-
-# <recipe> should be the name of the package you're making in this repo
-# <ingredients> are any files that need to exist for this package to be made
-#
-#	the recipie's directions are up to you.
+# M3TIOR
+#	My personal standards file.
+#	This contains every macro I use for building configuration scripts.
 #
 
 # mode ?= build			# this line is always assumed to exist
@@ -23,30 +18,6 @@
 #	tarball 	- outputs the built project as a .tar archive
 #	archive		- outputs the built project as a .ar archive (gnu-make's builtin)
 #	test		- runs all tests for the project
-#
-
-# It's recommended that you 'can' each of the build modes and use a conditional
-# within the actual recipie statement.
-#
-# for help on canning: https://www.gnu.org/software/make/manual/make.html#Canned-Recipes
-#
-# UPDATE: XXX
-#	Local 'canning' isn't a functional part of the makefile syntax so to make
-#	things debuggable, use multiline local variables in place of local cans
-#	a metacharacter called $(NEWLINE) exists as a line terminator so we can nest
-#	do exactly this. However, be aware this variable is inherited from the core
-#	makefile in the root.
-#
-#	Example:
-#
-#		private recipie : <mode> := \
-#			@ command $(NEWLINE) \ 	# don't forget that each subsequent
-#			@ for each in: do \		# line must be escaped to be a proper part
-#				commands \			# of the mode since it's being directly
-#			done; $(NEWLINE)\		# inserted into the recipie
-#			\
-#			@ other_command...		# and that the final line shouldn't be escaped
-#
 #
 
 # This line is here to provide the local filename for use in building the recipies
@@ -82,9 +53,6 @@ private $(PACKAGE) : tarball := \
 private $(PACKAGE) : archive := \
 	#NOT IMPLEMENTED
 
-private $(package) : test := \
-	#NOT IMPLEMENTED
-
 # NOTE:
 #	On building tests... Each test should be hosted within a chroot of the
 #	build directory with a symbolic link to the root directory for linking purposes.
@@ -93,11 +61,17 @@ private $(package) : test := \
 #
 #	example:
 #		@ mkdir -p $(srcdir)/BUILD/shadowroot; $(NEWLINE)\
-#		@ mount -o bind / $(srcdir)/BUILD/shadowroot; $(NEWLINE)\
+#		@ mount -o bind,ro / $(srcdir)/BUILD/shadowroot; $(NEWLINE)\
 #		TEST='
 #
 #		';\ # Can't have a newline here because we need to pass TEST
 #		chroot '$(srcdir)/BUILD/' "sh -i
+#
+# NOTE: WARNING!!!
+#	Please for the love of god don't forget the --read-only / -o ro,...
+#	I killed my last OS three days ago because of that... I tried to rm -rf the
+#	BUILD directory while I had mounts to shadowroot / root open... (;-;)
+#
 private $(PACKAGE) : test := \
 	#NOT IMPLEMENTED
 
