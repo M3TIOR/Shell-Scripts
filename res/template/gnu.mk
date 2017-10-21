@@ -1,15 +1,5 @@
 #!/usr/bin/make
 
-# Meta character because bork
-override comma := ,
-override empty :=
-override space := $(empty) $(empty)
-#Use these for making relative path refferences
-override relative_path := $(lastword $(MAKEFILE_LIST))
-override filename := $(lastword $(subst /,$(space),$(relative_path)))
-override file_path := $(abspath $(relative_path))
-override local_path := $(file_path:/$(filename)=$(empty))
-
 # for help: https://www.gnu.org/software/make/manual/html_node/Directory-Variables.html#Directory-Variables
 #
 # Script global paths

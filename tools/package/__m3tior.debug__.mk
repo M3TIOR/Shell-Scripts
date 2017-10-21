@@ -1,7 +1,7 @@
 #!/usr/bin/make
 
-# CONTRIBUTOR CREDIT LINE
-#	notes...
+# M3TIOR 2017
+#	NOTE: this is a testing package for the m3tior.mk toolkit
 #
 
 # <recipe> should be the name of the package you're making in this repo
@@ -49,15 +49,6 @@
 #
 #
 
-
-# The lines:
-#	PATH_ABSOLUTE := <relative path to the main script>
-#	TMP := <path to temporary file storage location>
-#
-# 	should always be presumed to exist, since this makefile is loaded
-# 	externally from the main repository makefile and can be used to
-# 	address files within the repo.
-
 # This line is here to provide the local filename for use in building the recipies
 # this way there's less redundant typing also opening the facility of using
 #
@@ -65,16 +56,29 @@
 #
 # for building packages easier...
 override PACKAGE := $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
-$(shell mkdir -p $(TMP)/template.sh) # init a new temp folder specific to this package
+# init a new temp folder specific to this package
+$(shell mkdir -p $(TMP)/template.sh)
 
 private $(PACKAGE) : build := \
-	#NOT IMPLEMENTED
+	@ # I'm gonna make a few test files here... $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #1'" > $(bindir)/test1 $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #2'" > $(sbindir)/test2 $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #3'" > $(mandir)/test3 $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #4'" > $(includedir)/test4 $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #5'" > $(datadir)/test5 $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #6'" > $(libdir)/test6 $(NEWLINE)
+
+
+private $(PACKAGE) : mkuninstaller := \
+	$(ENV_m3tior_mkuninstaller)
 
 private $(PACKAGE) : install := \
-	#NOT IMPLEMENTED
+	@@ # Break things here so nothing gets done for now... \
+	$(ENV_m3tior_mkuninstaller) \
+	$(ENV_m3tior_install) \
 
 private $(PACKAGE) : uninstall := \
-	#NOT IMPLEMENTED
+	$(ENV_m3tior_uninstall)
 
 private $(PACKAGE) : reinstall := \
 	#NOT IMPLEMENTED
@@ -89,9 +93,6 @@ private $(PACKAGE) : tarball := \
 	#NOT IMPLEMENTED
 
 private $(PACKAGE) : archive := \
-	#NOT IMPLEMENTED
-
-private $(package) : test := \
 	#NOT IMPLEMENTED
 
 # NOTE:
@@ -114,7 +115,7 @@ private $(package) : test := \
 #	BUILD directory while I had unprotected mounts to root open... (;-;)
 #
 
-$(PACKAGE): init <ingredients>;
+$(PACKAGE): clean init;
 	@ # Enable's debugging...
 	@ # If you wish to see each line executed simply use:
 	@ #

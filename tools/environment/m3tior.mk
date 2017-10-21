@@ -5,52 +5,48 @@
 #	This contains every macro I use for building configuration scripts.
 #
 
-# mode ?= build			# this line is always assumed to exist
-#						# subsequent modes cand be any of...
-#
-#	build 		- builds the project and outputs it to the repo/BUILD directory
-#	install 	- builds and installs the project to it's designated location
-#	uninstall 	- removes all files built in with the project
-#	reinstall	- uninstalls, builds and installs the package
-#	purge		- removes all files associated with the project including those
-#				  in user configuration directories
-#	deb			- outputs the built project as a .deb package
-#	tarball 	- outputs the built project as a .tar archive
-#	archive		- outputs the built project as a .ar archive (gnu-make's builtin)
-#	test		- runs all tests for the project
-#
+override ENV_m3tior_mkuninstaller = \
+	@ \
+	printf '\
+		\#\041/bin/sh\n\
+		\n\# M3TIOR\'s Generated Shell Uninstaller v0.1\n\
+		\nFILES= \'\';\
+		\n' > $(TMP)/template.sh/uninstall.sh $(NEWLINE)\
+	@ \
+	mkdir -p $(TMP)/template.sh/installtracker $(NEWLINE)\
+	@ \
+	cp --attributes-only -rfuv $(wildcard $(srcdir)/BUILD/*)\
+		$(TMP)/template.sh/installtracker >> $(TMP)/template.sh/tracker.log; $(NEWLINE)\
+	@ \
+	while read line; do\
+		echo "$line" >> /dev/null;\
+		SORC=${line# -> *};\
+		echo "$SORC" >> /dev/null;\
+		DEST=${line%* -> }
+		echo "$DEST" >> /dev/null;\
+	done < $(TMP)/template.sh/tracker.log;
 
-# This line is here to provide the local filename for use in building the recipies
-# this way there's less redundant typing also opening the facility of using
-#
-#	make <package>
-#
-# for building packages easier...
-override PACKAGE := $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
+override ENV_m3tior_install = \
+	@ \
+	cp -rfuv $(wildcard $(srcdir)/BUILD/*) / >> $(TMP)/template.sh/install.log; \
+	@ \
+	while read line; do\
+		echo "test";\
+	done < $(TMP)/template.sh/install.log;
 
-
-private $(PACKAGE) : build := \
+override ENV_m3tior_uninstall = \
 	#NOT IMPLEMENTED
 
-private $(PACKAGE) : install := \
+override ENV_m3tior_purge = \
 	#NOT IMPLEMENTED
 
-private $(PACKAGE) : uninstall := \
+override ENV_m3tior_deb = \
 	#NOT IMPLEMENTED
 
-private $(PACKAGE) : reinstall := \
+override ENV_m3tior_tarball = \
 	#NOT IMPLEMENTED
 
-private $(PACKAGE) : purge := \
-	#NOT IMPLEMENTED
-
-private $(PACKAGE) : deb := \
-	#NOT IMPLEMENTED
-
-private $(PACKAGE) : tarball := \
-	#NOT IMPLEMENTED
-
-private $(PACKAGE) : archive := \
+override ENV_m3tior_archive = \
 	#NOT IMPLEMENTED
 
 # NOTE:
@@ -72,10 +68,10 @@ private $(PACKAGE) : archive := \
 #	I killed my last OS three days ago because of that... I tried to rm -rf the
 #	BUILD directory while I had mounts to shadowroot / root open... (;-;)
 #
-private $(PACKAGE) : test := \
+override ENV_m3tior_test := \
 	#NOT IMPLEMENTED
 
-$(PACKAGE): init <ingredients>;
+$(PACKAGE): init;
 	@ # Enable's debugging...
 	@ # If you wish to see each line executed simply use:
 	@ #

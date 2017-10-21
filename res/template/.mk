@@ -39,23 +39,23 @@ endef
 # If no parameter is specified, then the first listed option is built first
 # We always want to build the project before deciding on installing it
 build: dependencies
-	location/to/build/script
+	#location/to/build/script
 
 install: build
-	location/to/install/script
+	#location/to/install/script
 
 package: build
-	location/to/package-builder/script
+	#location/to/package-builder/script
 
 uninstall:
-	location/to/uninstall/script
+	#location/to/uninstall/script
 
-reinstall: uninstall install
+reinstall: uninstall install;
 
-fix: purge install
+fix: purge install;
 
 purge:
-	location/to/purge/script
+	#location/to/purge/script
 
 clean:
 	@rm -vrf $(PATH_ABSOLUTE)/BUILD

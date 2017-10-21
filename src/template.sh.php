@@ -17,7 +17,7 @@
 #	add the ability to make templates of directories, but since my goal is
 #	to use this shell's built-ins explicitly, I don't think that's going to be
 #	entirely possible. Also, installing this script means you have to put up
-#	with having a .templates file put in your home directory for now.
+#	with having a .templates folder put in your home directory for now.
 #
 
 template(){						#subshell forces pathname expansion, if needs full paths

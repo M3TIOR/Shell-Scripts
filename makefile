@@ -19,58 +19,33 @@ override FILE := $(lastword $(subst /,$(SPACE),$(FILE_RELATIVE)))
 override PATH_RELATIVE := $(subst $(FILE),,$(FILE_RELATIVE))
 override PATH_ABSOLUTE := $(FILE_ABSOLUTE:/$(FILE)=$(EMPTY))
 
-# XXX: META-characters
-override COMMA := ,
-override EMPTY :=
-override SPACE := $(EMPTY) $(EMPTY)
-override define NEWLINE :=
+include $(PATH_ABSOLUTE)/tools/metachar.mk
+
+# NOTE: GNU-STD deviation;
+#	I'm the type of person who crave's reproducibilty.
+#	So I'm enforcing a strict law that all files must be
+#	built en stage, before being installed.
+#
+#	This way users are also able to test an app in one location
+#	to see if it's to their liking before actually installing it on
+#	their machine.
+include $(PATH_ABSOLUTE)/tools/gnu-std.mk
+stage := $(PATH_ABSOLUTE)/BUILD
+installdir := $(prefix)
+prefix := $(stage)/$(prefix)
+srcdir := $(PATH_ABSOLUTE)/src
 
 
-endef
-#
-# XXX: this must have two lines to function properly!!!
-#
-
-# for help: https://www.gnu.org/software/make/manual/html_node/Directory-Variables.html#Directory-Variables
-#
-# Script global paths
-#
-# This is borked atm... :
-#ifdef mode
-#	$(if ($(mode), build-sys),\
-#		prefix ?= / $\
-#		mode := build \
-#	)
-#	$(if ($(mode), build-global),\
-#		prefix ?= /usr/ \
-#		mode := build \
-#	)
-#endif
-prefix 			?= /usr/local
-exec_prefix 	?= $(prefix)
-bindir 			?= $(exec_prefix)/bin
-sbindir			?= $(exec_prefix)/sbin
-libexecdir		?= $(exec_prefix)/libexec
-datarootdir		?= $(prefix)/share
-datadir			?= $(datarootdir)
-sysconfdir		?= $(prefix)/etc
-sharedstatedir	?= $(prefix)/com
-localstatedir	?= $(prefix)/var
-runstatedir		?= $(localstatedir)/run
-includedir		?= $(prefix)/include
-oldincludedir	?= /usr/include
-docdir			?= $(datarootdir)/doc/$(1)
-infodir			?= $(datarootdir)/info
-htmldir			?= $(docdir)
-dvidir			?= $(docdir)
-pdfdir			?= $(docdir)
-psdir			?= $(docdir)
-libdir 			?= $(exec_prefix)/lib
-lispdir			?= $(datarootdir)/emacs/site-lisp
-localedir 		?= $(datarootdir)/locale
-mandir			?= $(datarootdir)/man
-srcdir			?= $(PATH_ABSOLUTE)
-uninstallerdir	?= $(sysconfdir)/m3tior/uninstall
+override TMP := $(shell \
+	if type mktemp > /dev/null 2>&1; then\
+		if mktemp -d --quiet; then\
+			return 0;\
+		fi;\
+	fi;\
+	mkdir -p $(PATH_ABSOLUTE)/.tmp;\
+	echo $(PATH_ABSOLUTE)/.tmp;\
+)
+$(shell echo "$(TMP)" >> $(PATH_ABSOLUTE)/.tmplist)
 
 # NOTE:
 # 	this is placed here to ensure all the build directories already exist
@@ -100,17 +75,19 @@ override targets := \
 #		a comment. I'm assuming what's happening is the variable is being
 #		saved with the trailing whitespace... It should trim... ugh...
 export mode ?= build
+export savetemp ?=
+export debug ?=
 # this line loads in all the other sub-scripts
 include $(candidates)
 
 # Phony targets don't output files
-.PHONY: $(targets) init all clean list help
+.PHONY: $(targets) init all clean list help build
 #----------------------------------------------------------------------
 
 init: ;
 	$(shell \
 		for path in $(DIRS); do \
-			mkdir -p $(srcdir)/BUILD/$$path; \
+			mkdir -p $$path; \
 		done;\
 	)
 
@@ -121,8 +98,7 @@ help: list ;
 	@ echo "\tmake all"
 	@ echo "if you wish to install, uninstall, purge, fix, or reinstall a package"
 	@ echo "\t'make mode='MODE' <package> ...' Where MODE is one of:"
-	@ echo "\t\tbuild\n\t\tbuild-global\n\t\tbuild-sys"
-	@ echo "\t\tinstall"
+	@ echo "\t\tbuild\n\t\tinstall"
 	@ echo "\t\tpurge\n\t\tuninstall\n\t\treinstall"
 	@ echo "\t\ttest\n\t\tdeb\n\t\tarchive\n\t\ttarball\n\t\t<custom>..."
 
@@ -135,6 +111,42 @@ list: ;
 all: init $(targets); @ # Build Everything
 
 clean:
-	@ rm -vrf $(PATH_ABSOLUTE)/BUILD
-	@ rm -vrf $(PATH_ABSOLUTE)/.tmp/composite
-	@ echo "Clean!"
+	@ # This just reads mtab for mouted directories within the jail
+	@ # and unmounts them. Because I really don't want to kill my OS
+	@ # By accident again...
+	@ while read line; do \
+		set - $$line; \
+		if [ "$${2##$(PATH_ABSOLUTE)/BUILD*}" = '' ]; then \
+			if ! umount $$2; then exit 1; fi; \
+		fi; \
+	done < /etc/mtab;
+	@ rm -vrf $(PATH_ABSOLUTE)/BUILD;
+	@ if [ -e $(PATH_ABSOLUTE)/.tmplist ]; then \
+		while read file; do \
+			rm -vrf $$file; \
+		done < $(PATH_ABSOLUTE)/.tmplist; \
+		rm $(PATH_ABSOLUTE)/.tmplist; \
+	fi;
+	@ echo "Clean!";
+
+
+# Clean up extra mounted directories after execution as a cautionary measure
+$(shell \
+	while read line; do \
+		set - $$line; \
+		if [ "$${2##$(PATH_ABSOLUTE)/BUILD*}" = '' ]; then \
+			if ! umount $$2; then exit 1; fi; \
+		fi; \
+	done < /etc/mtab; \
+)
+
+ifndef savetemp
+$(shell \
+	if [ -e $(PATH_ABSOLUTE)/.tmplist ]; then \
+		while read file; do \
+			rm -vrf $file; \
+		done < $(PATH_ABSOLUTE)/.tmplist; \
+		rm $(PATH_ABSOLUTE)/.tmplist; \
+	fi; \
+)
+endif

@@ -39,27 +39,24 @@
 # This line is here to provide the local filename for use in building the recipies
 # this way there's less redundant typing
 override package := $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
+$(shell mkdir -p $(TMP)/template.sh) # init a new temp folder specific to this package
 
 private $(package) : build = \
 	@ \
-	VERSION=$$(git log --pretty=format:"%H" $(srcdir)/src/template.sh.php); \
+	VERSION=$$(git log --pretty=format:"%H" $(srcdir)/template.sh.php); \
 	GLOBAL_PATH=$(datadir)/m3tior/template.sh; \
-	php -f $(srcdir)/src/template.sh.php -- \
+	php -f $(srcdir)/template.sh.php -- \
 		--version=$$VERSION \
 		--global-data=$$GLOBAL_PATH \
-	> $(srcdir)/BUILD/$(bindir)/template; $(NEWLINE)\
-	@ mkdir -p $(srcdir)/BUILD/$(datadir)/m3tior/template.sh; $(NEWLINE)\
+	> $(bindir)/template; $(NEWLINE)\
+	@ mkdir -p $(datadir)/m3tior/template.sh; $(NEWLINE)\
 	@ cp -rfu \
 		$(foreach data,\
-			$(wildcard $(srcdir)/res/template.sh/*), $(data)) \
-		$(srcdir)/BUILD/$(datadir)/m3tior/template.sh;
+			$(wildcard $(srcdir)/res/template/*), $(data)) \
+		$(datadir)/m3tior/template.sh;
 
-#while read line; do echo ; done < <(cp -rfuv ./test/derp ./test2); echo "~" >> ./test/derp
 private $(package) : install := \
-	@ \
-	while read line; do\
-		echo "test";\
-	done < <(cp -rfu $(srcdir)/BUILD /);
+	#NOT IMPLEMENTED
 
 private $(package) : uninstall := \
 	#NOT IMPLEMENTED
