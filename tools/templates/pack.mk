@@ -114,16 +114,15 @@ private $(package) : test := \
 #	BUILD directory while I had unprotected mounts to root open... (;-;)
 #
 
-$(PACKAGE): init <ingredients>;
+$(PACKAGE): <dependencies within this repository [files or packages]>;
 	@ # Enable's debugging...
 	@ # If you wish to see each line executed simply use:
 	@ #
 	@ #		make recipie ... debug=true
 	@ #
 	$(eval private $(PACKAGE): bake = $$($(mode)))
-	$(if $(debug),\
-		$(subst @,,\
-			$(bake)\
-		),\
-		$(bake)\
-	)
+ifneq ($(debug),)
+	$(subst @,,$(bake))
+else
+	$(bake)
+endif

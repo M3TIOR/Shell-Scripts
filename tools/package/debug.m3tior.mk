@@ -115,16 +115,15 @@ private $(PACKAGE) : archive := \
 #	BUILD directory while I had unprotected mounts to root open... (;-;)
 #
 
-$(PACKAGE): clean init;
+$(PACKAGE): ;
 	@ # Enable's debugging...
 	@ # If you wish to see each line executed simply use:
 	@ #
 	@ #		make recipie ... debug=true
 	@ #
 	$(eval private $(PACKAGE): bake = $$($(mode)))
-	$(if $(debug),\
-		$(subst @,,\
-			$(bake)\
-		),\
-		$(bake)\
-	)
+ifneq ($(debug),)
+	$(subst @,,$(bake))
+else
+	$(bake)
+endif

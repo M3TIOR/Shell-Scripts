@@ -43,17 +43,23 @@ $(shell mkdir -p $(TMP)/template.sh) # init a new temp folder specific to this p
 
 private $(package) : build = \
 	@ \
-	VERSION=$$(git log --pretty=format:"%H" $(srcdir)/template.sh.php); \
-	GLOBAL_PATH=$(datadir)/m3tior/template.sh; \
+	VERSION="\"$$(\
+		git log --pretty=format:"%H" $(srcdir)/template.sh.php | while read version; do\
+			echo $$version;\
+			break;\
+		done;\
+	)\""; \
+	GLOBAL_PATH="\"$(datadir)/m3tior/template.sh\""; \
 	php -f $(srcdir)/template.sh.php -- \
-		--version=$$VERSION \
-		--global-data=$$GLOBAL_PATH \
-	> $(bindir)/template; $(NEWLINE)\
-	@ mkdir -p $(datadir)/m3tior/template.sh; $(NEWLINE)\
+		--version="$$VERSION" \
+		--global-data="$$GLOBAL_PATH" \
+	> $(stage)/$(bindir)/template; $(NEWLINE)\
+	@ mkdir -p $(stage)/$(datadir)/m3tior/template.sh; $(NEWLINE)\
+	@ # $(wildcard $(PATH_ABSOLUTE)/res/template/.*) $(NEWLINE)\
 	@ cp -rfu \
 		$(foreach data,\
-			$(wildcard $(srcdir)/res/template/*), $(data)) \
-		$(datadir)/m3tior/template.sh;
+			$(wildcard $(PATH_ABSOLUTE)/res/template/*), $(data)) \
+		$(stage)/$(datadir)/m3tior/template.sh;
 
 private $(package) : install := \
 	#NOT IMPLEMENTED
@@ -79,11 +85,10 @@ private $(package) : archive := \
 private $(package) : test := \
 	#NOT IMPLEMENTED
 
-$(package): init $(PATH_ABSOLUTE)/src/template.sh.php
+$(package): $(PATH_ABSOLUTE)/src/template.sh.php
 	$(eval private $(package): bake = $$($(mode)))
-	$(if $(debug),\
-		$(subst @,,\
-			$(bake)\
-		),\
-		$(bake)\
-	)
+ifneq ($(debug),)
+	$(subst @,,$(bake))
+else
+	$(bake)
+endif

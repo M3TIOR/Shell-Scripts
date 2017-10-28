@@ -31,8 +31,6 @@ include $(PATH_ABSOLUTE)/tools/metachar.mk
 #	their machine.
 include $(PATH_ABSOLUTE)/tools/gnu-std.mk
 stage := $(PATH_ABSOLUTE)/BUILD
-installdir := $(prefix)
-prefix := $(stage)/$(prefix)
 srcdir := $(PATH_ABSOLUTE)/src
 
 
@@ -51,24 +49,31 @@ $(shell echo "$(TMP)" >> $(PATH_ABSOLUTE)/.tmplist)
 # 	this is placed here to ensure all the build directories already exist
 #	before we try and do anything stupid, ex: putting shit where it needs to go.
 # 	it's used within the 'init' recipie
-DIRS			= $(prefix) $(exec_prefix) $(bindir) $(sbindir) $(libexecdir) \
+override DIRS	= $(prefix) $(exec_prefix) $(bindir) $(sbindir) $(libexecdir) \
 				$(datarootdir) $(datadir) $(sysconfdir) $(sharedstatedir) \
 				$(localstatedir) $(runstatedir) $(includedir) $(oldincludedir) \
 				$(docdir) $(infodir) $(htmldir) $(dvidir) $(pdfdir) $(psdir) \
 				$(libdir) $(lispdir) $(localedir) $(mandir) $(uninstallerdir)
+$(shell \
+	for path in $(DIRS); do \
+		mkdir -p $(stage)$$path; \
+	done;\
+)
 
 
 # Main segment of script:
-# this ensures packages exist before we try and build them
-override preload_packages := $(wildcard $(PATH_ABSOLUTE)/tools/package/*.mk)
-
-override candidates := $(call preload_packages)	# this saves our make targets
+# 	This finds packages so we can try and build them
+# 	Strips the containing directory and trims off the file extension,
+#	all for easier usage in the help, list and all step
+override packages := $(wildcard $(PATH_ABSOLUTE)/tools/package/*.mk)
 override targets := \
-	$(foreach target,$(candidates),\
+	$(foreach target,$(packages),\
 		$(subst .mk,$(EMPTY),\
 			$(lastword $(subst /,$(SPACE),$(target)))\
 		)\
 	)
+
+
 # as the default, make only builds the projects
 # XXX: borked, seriously this syntax is killer...
 #		for some reason this won't work if you add whitespace before
@@ -78,18 +83,11 @@ export mode ?= build
 export savetemp ?=
 export debug ?=
 # this line loads in all the other sub-scripts
-include $(candidates)
+include $(packages)
 
 # Phony targets don't output files
-.PHONY: $(targets) init all clean list help build
+.PHONY: help clean list all $(targets)
 #----------------------------------------------------------------------
-
-init: ;
-	$(shell \
-		for path in $(DIRS); do \
-			mkdir -p $$path; \
-		done;\
-	)
 
 help: list ;
 	@ echo "To build individual packages:"
@@ -104,11 +102,13 @@ help: list ;
 
 list: ;
 	@ echo "The current packages available for install in this repository are..."
-	@ for package in $(preload_packages); do\
-		P=$${package%.mk}; echo "\t$${P##*/}";\
+	@ for package in $(targets); do \
+		if [ "$${package%%debug.*}" ]; then \
+			echo "\t$$package"; \
+		fi; \
 	done;
 
-all: init $(targets); @ # Build Everything
+all: $(targets); @ # Build Everything
 
 clean:
 	@ # This just reads mtab for mouted directories within the jail
@@ -140,6 +140,7 @@ $(shell \
 	done < /etc/mtab; \
 )
 
+# Clean up temporary folders and files when we don't need them saved
 ifndef savetemp
 $(shell \
 	if [ -e $(PATH_ABSOLUTE)/.tmplist ]; then \

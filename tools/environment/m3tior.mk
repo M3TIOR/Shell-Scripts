@@ -5,6 +5,9 @@
 #	This contains every macro I use for building configuration scripts.
 #
 
+# NOTE: GNU-STD deviation
+uninstallerdir	:= $(sysconfdir)/m3tior/uninstall
+
 override ENV_m3tior_mkuninstaller = \
 	@ \
 	printf '\
@@ -28,7 +31,7 @@ override ENV_m3tior_mkuninstaller = \
 
 override ENV_m3tior_install = \
 	@ \
-	cp -rfuv $(wildcard $(srcdir)/BUILD/*) / >> $(TMP)/template.sh/install.log; \
+	cp -rfuv $(wildcard $(prefix)/BUILD/*) / >> $(TMP)/template.sh/install.log; \
 	@ \
 	while read line; do\
 		echo "test";\
@@ -70,17 +73,3 @@ override ENV_m3tior_archive = \
 #
 override ENV_m3tior_test := \
 	#NOT IMPLEMENTED
-
-$(PACKAGE): init;
-	@ # Enable's debugging...
-	@ # If you wish to see each line executed simply use:
-	@ #
-	@ #		make recipie ... debug=true
-	@ #
-	$(eval private $(PACKAGE): bake = $$($(mode)))
-	$(if $(debug),\
-		$(subst @,,\
-			$(bake)\
-		),\
-		$(bake)\
-	)

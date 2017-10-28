@@ -32,6 +32,3 @@ lispdir			?= $(datarootdir)/emacs/site-lisp
 localedir 		?= $(datarootdir)/locale
 mandir			?= $(datarootdir)/man
 srcdir			?= $(PATH_ABSOLUTE)
-
-# NOTE: gnu deviation
-uninstallerdir	?= $(sysconfdir)/m3tior/uninstall
