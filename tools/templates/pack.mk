@@ -53,6 +53,7 @@
 # The lines:
 #	PATH_ABSOLUTE := <relative path to the main script>
 #	TMP := <path to temporary file storage location>
+#	PACKAGE := <this file's name>
 #
 # 	should always be presumed to exist, since this makefile is loaded
 # 	externally from the main repository makefile and can be used to
@@ -64,7 +65,6 @@
 #	make <package>
 #
 # for building packages easier...
-override PACKAGE := $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
 $(shell mkdir -p $(TMP)/template.sh) # init a new temp folder specific to this package
 
 private $(PACKAGE) : build := \
@@ -114,15 +114,17 @@ private $(package) : test := \
 #	BUILD directory while I had unprotected mounts to root open... (;-;)
 #
 
-$(PACKAGE): <dependencies within this repository [files or packages]>;
-	@ # Enable's debugging...
+$(eval private $(PACKAGE): bake := $$($(mode)))
+$(PACKAGE): ;
+	@ # Debugging Controller...
 	@ # If you wish to see each line executed simply use:
 	@ #
 	@ #		make recipie ... debug=true
 	@ #
-	$(eval private $(PACKAGE): bake = $$($(mode)))
-ifneq ($(debug),)
-	$(subst @,,$(bake))
-else
+ifeq ($(debug), $(EMPTY))
 	$(bake)
+else
+	$(subst $(NEWLINE),$(NEWLINE)@,\
+		@$(bake)\
+	)
 endif

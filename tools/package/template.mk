@@ -4,8 +4,8 @@
 #	notes...
 #
 
-# <recipe> should be the name of the package you're making in this repo
-# <ingredients> are any files that need to exist for this package to be made
+# <recipe> should be the name of the PACKAGE you're making in this repo
+# <ingredients> are any files that need to exist for this PACKAGE to be made
 #
 #	the recipie's directions are up to you.
 #
@@ -16,10 +16,10 @@
 #	build 		- builds the project and outputs it to the repo/BUILD directory
 #	install 	- builds and installs the project to it's designated location
 #	uninstall 	- removes all files built in with the project
-#	reinstall	- uninstalls, builds and installs the package
+#	reinstall	- uninstalls, builds and installs the PACKAGE
 #	purge		- removes all files associated with the project including those
 #				  in user configuration directories
-#	deb			- outputs the built project as a .deb package
+#	deb			- outputs the built project as a .deb PACKAGE
 #	tarball 	- outputs the built project as a .tar archive
 #	archive		- outputs the built project as a .ar archive (gnu-make's builtin)
 #
@@ -38,57 +38,60 @@
 
 # This line is here to provide the local filename for use in building the recipies
 # this way there's less redundant typing
-override package := $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
-$(shell mkdir -p $(TMP)/template.sh) # init a new temp folder specific to this package
+$(shell mkdir -p $(TMP)/template.sh) # init a new temp folder specific to this PACKAGE
 
-private $(package) : build = \
-	@ \
-	VERSION="\"$$(\
+private $(PACKAGE) : build := \
+	VERSION=$$(\
 		git log --pretty=format:"%H" $(srcdir)/template.sh.php | while read version; do\
 			echo $$version;\
 			break;\
 		done;\
-	)\""; \
-	GLOBAL_PATH="\"$(datadir)/m3tior/template.sh\""; \
+	); \
+	GLOBAL_PATH=$(datadir)/m3tior/template.sh; \
 	php -f $(srcdir)/template.sh.php -- \
 		--version="$$VERSION" \
 		--global-data="$$GLOBAL_PATH" \
 	> $(stage)/$(bindir)/template; $(NEWLINE)\
-	@ mkdir -p $(stage)/$(datadir)/m3tior/template.sh; $(NEWLINE)\
-	@ # $(wildcard $(PATH_ABSOLUTE)/res/template/.*) $(NEWLINE)\
-	@ cp -rfu \
+	mkdir -p $(stage)/$(datadir)/m3tior/template.sh; $(NEWLINE)\
+	cp -rfu \
 		$(foreach data,\
-			$(wildcard $(PATH_ABSOLUTE)/res/template/*), $(data)) \
+			$(filter-out $(addprefix $(PATH_ABSOLUTE)/res/template/, . ..) ,\
+				$(wildcard $(addprefix $(PATH_ABSOLUTE)/res/template/, * .*)) \
+			),\
+			$(data) \
+		) \
 		$(stage)/$(datadir)/m3tior/template.sh;
 
-private $(package) : install := \
+private $(PACKAGE) : install := \
 	#NOT IMPLEMENTED
 
-private $(package) : uninstall := \
+private $(PACKAGE) : uninstall := \
 	#NOT IMPLEMENTED
 
-private $(package) : reinstall := \
+private $(PACKAGE) : reinstall := \
 	#NOT IMPLEMENTED
 
-private $(package) : purge := \
+private $(PACKAGE) : purge := \
 	#NOT IMPLEMENTED
 
-private $(package) : deb := \
+private $(PACKAGE) : deb := \
 	#NOT IMPLEMENTED
 
-private $(package) : tarball := \
+private $(PACKAGE) : tarball := \
 	#NOT IMPLEMENTED
 
-private $(package) : archive := \
+private $(PACKAGE) : archive := \
 	#NOT IMPLEMENTED
 
-private $(package) : test := \
+private $(PACKAGE) : test := \
 	#NOT IMPLEMENTED
 
-$(package): $(PATH_ABSOLUTE)/src/template.sh.php
-	$(eval private $(package): bake = $$($(mode)))
-ifneq ($(debug),)
-	$(subst @,,$(bake))
-else
+$(eval private $(PACKAGE): bake := $$($(mode)))
+$(PACKAGE): ;
+ifeq ($(debug), $(EMPTY))
 	$(bake)
+else
+	$(subst $(NEWLINE),$(NEWLINE)@,\
+		@$(bake)\
+	)
 endif

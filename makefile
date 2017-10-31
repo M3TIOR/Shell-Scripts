@@ -12,28 +12,13 @@
 #	most people don't like to type with caps-lock on.
 #
 
+
 # NOTE: PATH AND FILE REFFERENCES
 override FILE_RELATIVE := $(lastword $(MAKEFILE_LIST))
 override FILE_ABSOLUTE := $(abspath $(FILE_RELATIVE))
-override FILE := $(lastword $(subst /,$(SPACE),$(FILE_RELATIVE)))
+override FILE := $(lastword $(subst /, ,$(FILE_RELATIVE)))
 override PATH_RELATIVE := $(subst $(FILE),,$(FILE_RELATIVE))
-override PATH_ABSOLUTE := $(FILE_ABSOLUTE:/$(FILE)=$(EMPTY))
-
-include $(PATH_ABSOLUTE)/tools/metachar.mk
-
-# NOTE: GNU-STD deviation;
-#	I'm the type of person who crave's reproducibilty.
-#	So I'm enforcing a strict law that all files must be
-#	built en stage, before being installed.
-#
-#	This way users are also able to test an app in one location
-#	to see if it's to their liking before actually installing it on
-#	their machine.
-include $(PATH_ABSOLUTE)/tools/gnu-std.mk
-stage := $(PATH_ABSOLUTE)/BUILD
-srcdir := $(PATH_ABSOLUTE)/src
-
-
+override PATH_ABSOLUTE := $(FILE_ABSOLUTE:/$(FILE)=)
 override TMP := $(shell \
 	if type mktemp > /dev/null 2>&1; then\
 		if mktemp -d --quiet; then\
@@ -44,6 +29,22 @@ override TMP := $(shell \
 	echo $(PATH_ABSOLUTE)/.tmp;\
 )
 $(shell echo "$(TMP)" >> $(PATH_ABSOLUTE)/.tmplist)
+
+
+include $(PATH_ABSOLUTE)/tools/metachar.mk
+include $(PATH_ABSOLUTE)/tools/gnu-std.mk
+
+
+# NOTE: GNU-STD deviation;
+#	I'm the type of person who crave's reproducibilty.
+#	So I'm enforcing a strict law that all files must be
+#	built en stage, before being installed.
+#
+#	This way users are also able to test an app in one location
+#	to see if it's to their liking before actually installing it on
+#	their machine.
+stage := $(PATH_ABSOLUTE)/BUILD
+srcdir := $(PATH_ABSOLUTE)/src
 
 # NOTE:
 # 	this is placed here to ensure all the build directories already exist
@@ -65,6 +66,7 @@ $(shell \
 # 	This finds packages so we can try and build them
 # 	Strips the containing directory and trims off the file extension,
 #	all for easier usage in the help, list and all step
+override PACKAGE = $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
 override packages := $(wildcard $(PATH_ABSOLUTE)/tools/package/*.mk)
 override targets := \
 	$(foreach target,$(packages),\
@@ -79,15 +81,15 @@ override targets := \
 #		for some reason this won't work if you add whitespace before
 #		a comment. I'm assuming what's happening is the variable is being
 #		saved with the trailing whitespace... It should trim... ugh...
-export mode ?= build
+
+export mode := build
 export savetemp ?=
 export debug ?=
-# this line loads in all the other sub-scripts
-include $(packages)
 
-# Phony targets don't output files
-.PHONY: help clean list all $(targets)
+
 #----------------------------------------------------------------------
+# Phony targets don't output files
+.PHONY: help clean list $(targets)
 
 help: list ;
 	@ echo "To build individual packages:"
@@ -129,6 +131,8 @@ clean:
 	fi;
 	@ echo "Clean!";
 
+# this line loads in all the other sub-scripts
+include $(packages)
 
 # Clean up extra mounted directories after execution as a cautionary measure
 $(shell \

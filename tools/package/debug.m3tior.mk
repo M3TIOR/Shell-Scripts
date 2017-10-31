@@ -55,7 +55,6 @@
 #	make <package>
 #
 # for building packages easier...
-override PACKAGE := $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
 # init a new temp folder specific to this package
 $(shell mkdir -p $(TMP)/template.sh)
 
@@ -115,15 +114,17 @@ private $(PACKAGE) : archive := \
 #	BUILD directory while I had unprotected mounts to root open... (;-;)
 #
 
+$(eval private $(PACKAGE): bake = $$($(mode)))
 $(PACKAGE): ;
 	@ # Enable's debugging...
 	@ # If you wish to see each line executed simply use:
 	@ #
 	@ #		make recipie ... debug=true
 	@ #
-	$(eval private $(PACKAGE): bake = $$($(mode)))
-ifneq ($(debug),)
-	$(subst @,,$(bake))
-else
+ifeq ($(debug), $(EMPTY))
 	$(bake)
+else
+	$(subst $(NEWLINE),$(NEWLINE)@,\
+		@$(bake)\
+	)
 endif
