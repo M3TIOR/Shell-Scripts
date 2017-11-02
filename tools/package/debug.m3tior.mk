@@ -49,23 +49,18 @@
 #
 #
 
-# This line is here to provide the local filename for use in building the recipies
-# this way there's less redundant typing also opening the facility of using
-#
-#	make <package>
-#
-# for building packages easier...
+
 # init a new temp folder specific to this package
 $(shell mkdir -p $(TMP)/template.sh)
 
 private $(PACKAGE) : build := \
 	@ # I'm gonna make a few test files here... $(NEWLINE)\
-	@ printf "#\041/bin/sh\n\necho 'test #1'" > $(bindir)/test1 $(NEWLINE)\
-	@ printf "#\041/bin/sh\n\necho 'test #2'" > $(sbindir)/test2 $(NEWLINE)\
-	@ printf "#\041/bin/sh\n\necho 'test #3'" > $(mandir)/test3 $(NEWLINE)\
-	@ printf "#\041/bin/sh\n\necho 'test #4'" > $(includedir)/test4 $(NEWLINE)\
-	@ printf "#\041/bin/sh\n\necho 'test #5'" > $(datadir)/test5 $(NEWLINE)\
-	@ printf "#\041/bin/sh\n\necho 'test #6'" > $(libdir)/test6 $(NEWLINE)
+	@ printf "#\041/bin/sh\n\necho 'test #1'" > $(stage)$(bindir)/test1 $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #2'" > $(stage)$(sbindir)/test2 $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #3'" > $(stage)$(mandir)/test3 $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #4'" > $(stage)$(includedir)/test4 $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #5'" > $(stage)$(datadir)/test5 $(NEWLINE)\
+	@ printf "#\041/bin/sh\n\necho 'test #6'" > $(stage)$(libdir)/test6 $(NEWLINE)
 
 
 private $(PACKAGE) : mkuninstaller := \
@@ -121,7 +116,7 @@ $(PACKAGE): ;
 	@ #
 	@ #		make recipie ... debug=true
 	@ #
-ifeq ($(debug), $(EMPTY))
+ifneq ($(debug), $(EMPTY))
 	$(bake)
 else
 	$(subst $(NEWLINE),$(NEWLINE)@,\

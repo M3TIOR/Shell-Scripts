@@ -10,6 +10,7 @@
 override COMMA := ,
 override EMPTY :=
 override SPACE := $(EMPTY) $(EMPTY)
+override TAB := $(EMPTY)	$(EMPTY)
 override define NEWLINE :=
 
 

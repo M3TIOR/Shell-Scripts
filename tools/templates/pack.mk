@@ -91,7 +91,7 @@ private $(PACKAGE) : tarball := \
 private $(PACKAGE) : archive := \
 	#NOT IMPLEMENTED
 
-private $(package) : test := \
+private $(PACKAGE) : test := \
 	#NOT IMPLEMENTED
 
 # NOTE:
@@ -114,6 +114,11 @@ private $(package) : test := \
 #	BUILD directory while I had unprotected mounts to root open... (;-;)
 #
 
+# NOTE: WARNING; DO NOT REMOVE!
+#	For now, the content below this is going to be manditory for
+#	packages to contain. I may be replacing this with a prototype variable
+#	in the near future, but for now I can't get the syntax to work correctly
+#
 $(eval private $(PACKAGE): bake := $$($(mode)))
 $(PACKAGE): ;
 	@ # Debugging Controller...
@@ -121,7 +126,7 @@ $(PACKAGE): ;
 	@ #
 	@ #		make recipie ... debug=true
 	@ #
-ifeq ($(debug), $(EMPTY))
+ifneq ($(debug), $(EMPTY))
 	$(bake)
 else
 	$(subst $(NEWLINE),$(NEWLINE)@,\

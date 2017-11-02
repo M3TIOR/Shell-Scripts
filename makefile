@@ -30,7 +30,6 @@ override TMP := $(shell \
 )
 $(shell echo "$(TMP)" >> $(PATH_ABSOLUTE)/.tmplist)
 
-
 include $(PATH_ABSOLUTE)/tools/metachar.mk
 include $(PATH_ABSOLUTE)/tools/gnu-std.mk
 
@@ -63,10 +62,28 @@ $(shell \
 
 
 # Main segment of script:
+# 	This line is here to provide the local filename for use in building the recipies
+# 	this way there's less redundant typing also opening the facility of using
+#
+#	make <package>
+#
+# 	for building packages easier...
+override PACKAGE = $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
+# TODO: XXX FIXME XXX
+#override INITPKG = \
+#$(PACKAGE): ;\
+#	$(if ($(debug), $(EMPTY)),\
+#		$(subst $(NEWLINE),,\
+#			$(bake)\
+#		),\
+#		$(subst $(NEWLINE),@,\
+#			@$(bake)\
+#		)\
+#	)
+#
 # 	This finds packages so we can try and build them
 # 	Strips the containing directory and trims off the file extension,
 #	all for easier usage in the help, list and all step
-override PACKAGE = $(subst .mk,,$(lastword $(subst /,$(SPACE),$(lastword $(MAKEFILE_LIST)))))
 override packages := $(wildcard $(PATH_ABSOLUTE)/tools/package/*.mk)
 override targets := \
 	$(foreach target,$(packages),\

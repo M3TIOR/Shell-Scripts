@@ -86,9 +86,10 @@ private $(PACKAGE) : archive := \
 private $(PACKAGE) : test := \
 	#NOT IMPLEMENTED
 
+
 $(eval private $(PACKAGE): bake := $$($(mode)))
 $(PACKAGE): ;
-ifeq ($(debug), $(EMPTY))
+ifneq ($(debug), $(EMPTY))
 	$(bake)
 else
 	$(subst $(NEWLINE),$(NEWLINE)@,\
