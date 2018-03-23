@@ -1,0 +1,197 @@
+#!/bin/bash
+#!/usr/bin/bash
+#!/usr/bin/env bash
+
+#
+# M3TIOR 2018
+# 	Upon completion I will place a description and MIT license here
+#
+
+#--------------------------------INIT-REFERENCES--------------------------------
+INITIATOR="${BASH_SOURCE[0]}"
+while [ -h "$INITIATOR" ]; do
+	CONTAINER="$( cd -P "$( dirname "$INITIATOR" )" && pwd )"
+	INITIATOR="$(readlink "$INITIATOR")"
+	[[ $INITIATOR != /* ]] && INITIATOR="$CONTAINER/$INITIATOR"
+done
+CONTAINER="$( cd -P "$( dirname "$INITIATOR" )" && pwd )"
+#-------------------------------------------------------------------------------
+
+gnu_defaults(){
+	#NOTE: GNU STANDARD IMPLEMENT
+	#	Used for installing packages to appropriate locations
+	#
+	prefix=/usr/local;
+	exec_prefix=$prefix;
+	bindir=$exec_prefix/bin;
+	sbindir=$exec_prefix/sbin;
+	libexecdir=$exec_prefix/libexec;
+	datarootdir=$prefix/share;
+	datadir=$datarootdir;
+	sysconfdir=$prefix/etc;
+	sharedstatedir=$prefix/com;
+	localstatedir=$prefix/var;
+	runstatedir=$localstatedir/run;
+	includedir=$prefix/include;
+	oldincludedir=/usr/include;
+	docdir=$datarootdir/doc;
+	infodir=$datarootdir/info;
+	htmldir=$docdir;
+	dvidir=$docdir;
+	pdfdir=$docdir;
+	psdir=$docdir;
+	libdir=$prefix/lib;
+	lispdir=$datarootdir/emacs/site-lisp;
+	localedir=$datarootdir/locale;
+	mandir=$datarootdir/man;
+}
+
+necro_defaults(){
+	NECRO_BIN="$CONTAINER/necromancies/bin";
+	NECRO_LIB="$CONTAINER/necromancies/lib";
+	NECRO_DAT="$CONTAINER/necromancies/share";
+	NECRO_AUTO_UPDATE=false;
+	NECRO_AUTO_UPDATE_CONFIG="";
+}
+
+envy(){
+	local VERSION;				VERSION="1.0";
+	local OPTARG; 				OPTARG='';
+	local OPTIND; 				OPTIND=0;
+	local IFS; 					IFS=' ';
+	local VERBOSE;				VERBOSE=false;
+	while getopts ":hv" arg; do
+		case $arg in
+			'v') VERBOSE=true;;
+			'h')
+				echo "Usage: $0 -hv"
+				echo "\t-v\t'Verbose' changes logging verbosity.";
+				echo "\t-h\tPrint's this message.";
+				return 0;
+			;;
+			[?])
+				echo "Usage: $0 -hv [-n PATH] [-c PATH]" >&2;
+				exit 1;
+			;;
+		esac;
+	done;
+	while read line; do
+
+	done < <( set -o posix; set );
+}
+
+_update_env(){
+
+}
+
+configure(){
+	local VERSION;				VERSION="1.0";
+	local OPTARG; 				OPTARG='';
+	local OPTIND; 				OPTIND=0;
+	local IFS; 					IFS=' ';
+	local VERBOSE;				VERBOSE=false;
+	local CUSTOM;				CUSTOM='';
+	while getopts ":hvc:n:" arg; do
+		case $arg in
+			'c')
+				if ! [ -e $OPTARG ]; then
+					echo "error: file '$OPTARG' does not exist!" >&2;
+				elif [ -d $OPTARG ]; then
+					echo "error: config file cannot be type 'directory'" >&2;
+				else
+					CUSTOM="$OPTARG";
+				fi;
+			;;
+			'n')
+
+			;;
+			'v') VERBOSE=true;;
+			'h')
+				echo "Usage: $0 -hv [-n PATH] [-c PATH]"
+				echo "\t-c\tUses PATH in the place of the default configuration file.";
+				echo "\t-n\tMakes PATH a new default necro-conf.";\
+				echo "\t-v\t'Verbose' changes logging verbosity.";
+				echo "\t-h\tPrint's this message.";
+				return 0;
+			;;
+			[?])
+				echo "Usage: $0 -hv [-n PATH] [-c PATH]" >&2;
+				exit 1;
+			;;
+		esac;
+	done;
+	if [ $CUSTOM != "" ] && [ -e $CUSTOM ]; then
+		# if we're supplied with a custom configuration file,
+		# attempt to use it's settings first
+		while read line; do
+			local COMMENT_REMOVED="${line%%[#]*}";
+			IFS=";"; for DECLARATION in "COMMENT_REMOVED"; do
+				VARIABLE="${DECLARATION%%[=]*}";
+				VALUE="${DECLARATION##*[=]}";
+				eval "$VARIABLE=\"$VALUE\"";
+			done;
+		done < $CUSTOM;
+	elif [ -e ./.necro-conf ]; then
+		# otherwise, if we have a config in the current directory use it
+		# with highest priority by default.
+		while read line; do
+			local COMMENT_REMOVED="${line%%[#]*}";
+			IFS=";"; for DECLARATION in "COMMENT_REMOVED"; do
+				VARIABLE="${DECLARATION%%[=]*}";
+				VALUE="${DECLARATION##*[=]}";
+				eval "$VARIABLE=\"$VALUE\"";
+			done;
+		done < ./.necro-conf;
+
+	elif [ -e ~/.necro-conf ]; then
+		# if we have a config in our home directory use it.
+		while read line; do
+			local COMMENT_REMOVED="${line%%[#]*}";
+			IFS=";"; for DECLARATION in "COMMENT_REMOVED"; do
+				VARIABLE="${DECLARATION%%[=]*}";
+				VALUE="${DECLARATION##*[=]}";
+				eval "$VARIABLE=\"$VALUE\"";
+			done;
+		done < ~/.necro-conf;
+	else
+		# if we have no other options, load defaults
+
+}
+
+interactive(){
+	while true; do
+		read -p ""
+	done;
+}
+
+install(){
+	if [ $1 == "python3" ] || [ $1 == "pip3" ]; then
+		echo;
+	fi;
+	if [ $1 == "node" ] || [ $1 == "npm" ]; then
+		echo;
+	fi;
+}
+
+update(){
+	echo
+}
+
+remove(){
+
+}
+
+exec(){
+
+}
+
+export(){
+
+}
+
+
+
+main(){
+
+}
+main "$*"
