@@ -52,28 +52,28 @@
 # init a new temp folder specific to this package
 $(shell mkdir -p $(TMP)/template.sh)
 
-private $(PACKAGE) : build = \
-	# I'm gonna make a few test files here... $(NEWLINE)\
-	printf "#\041/bin/sh\n\necho 'test #1'" > $(stage)$(bindir)/test1 $(NEWLINE)\
-	printf "#\041/bin/sh\n\necho 'test #2'" > $(stage)$(sbindir)/test2 $(NEWLINE)\
-	printf "#\041/bin/sh\n\necho 'test #3'" > $(stage)$(mandir)/test3 $(NEWLINE)\
-	printf "#\041/bin/sh\n\necho 'test #4'" > $(stage)$(includedir)/test4 $(NEWLINE)\
-	printf "#\041/bin/sh\n\necho 'test #5'" > $(stage)$(datadir)/test5 $(NEWLINE)\
-	printf "#\041/bin/sh\n\necho 'test #6'" > $(stage)$(libdir)/test6 $(NEWLINE)
+private $(PACKAGE) : build := \
+	\# I'm gonna make a few test files here... $(NEWLINE)\
+	printf "\#\041/bin/sh\n\necho 'test \#1'" > $(stage)$(bindir)/test1 $(NEWLINE)\
+	printf "\#\041/bin/sh\n\necho 'test \#2'" > $(stage)$(sbindir)/test2 $(NEWLINE)\
+	printf "\#\041/bin/sh\n\necho 'test \#3'" > $(stage)$(mandir)/test3 $(NEWLINE)\
+	printf "\#\041/bin/sh\n\necho 'test \#4'" > $(stage)$(includedir)/test4 $(NEWLINE)\
+	printf "\#\041/bin/sh\n\necho 'test \#5'" > $(stage)$(datadir)/test5 $(NEWLINE)\
+	printf "\#\041/bin/sh\n\necho 'test \#6'" > $(stage)$(libdir)/test6 $(NEWLINE)
 
 
-private $(PACKAGE) : mkuninstaller = \
+private $(PACKAGE) : mkuninstaller := \
 	$(ENV_m3tior_mkuninstaller)
 
-private $(PACKAGE) : install = \
+private $(PACKAGE) : install := \
 	# Break things here so nothing gets done for now... $(NEWLINE)\
 	$(ENV_m3tior_mkuninstaller) $(NEWLINE)\
 	$(ENV_m3tior_install) $(NEWLINE)
 
-private $(PACKAGE) : uninstall = \
+private $(PACKAGE) : uninstall := \
 	$(ENV_m3tior_uninstall)
 
-private $(PACKAGE) : reinstall = \
+private $(PACKAGE) : reinstall := \
 	#NOT IMPLEMENTED
 
 private $(PACKAGE) : purge := \
@@ -108,13 +108,8 @@ private $(PACKAGE) : archive := \
 #	BUILD directory while I had unprotected mounts to root open... (;-;)
 #
 
-$(eval private $(PACKAGE): bake = $$($(mode)))
+$(eval private $(PACKAGE): bake := $$($(mode)))
 $(PACKAGE): ;
-	@ # Enable's debugging...
-	@ # If you wish to see each line executed simply use:
-	@ #
-	@ #		make recipie ... debug=true
-	@ #
 ifneq ($(debug), $(EMPTY))
 	$(bake)
 else

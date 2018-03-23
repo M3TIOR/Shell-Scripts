@@ -67,32 +67,32 @@
 # for building packages easier...
 $(shell mkdir -p $(TMP)/template.sh) # init a new temp folder specific to this package
 
-private $(PACKAGE) : build = \
-	#NOT IMPLEMENTED
+private $(PACKAGE) : build := \
+	$(#) NOT IMPLEMENTED
 
-private $(PACKAGE) : install = \
-	#NOT IMPLEMENTED
+private $(PACKAGE) : install := \
+	$(#) NOT IMPLEMENTED
 
-private $(PACKAGE) : uninstall = \
-	#NOT IMPLEMENTED
+private $(PACKAGE) : uninstall := \
+	$(#) NOT IMPLEMENTED
 
-private $(PACKAGE) : reinstall = \
-	#NOT IMPLEMENTED
+private $(PACKAGE) : reinstall := \
+	$(#) NOT IMPLEMENTED
 
-private $(PACKAGE) : purge = \
-	#NOT IMPLEMENTED
+private $(PACKAGE) : purge := \
+	$(#) NOT IMPLEMENTED
 
-private $(PACKAGE) : deb = \
-	#NOT IMPLEMENTED
+private $(PACKAGE) : deb := \
+	$(#) NOT IMPLEMENTED
 
-private $(PACKAGE) : tarball = \
-	#NOT IMPLEMENTED
+private $(PACKAGE) : tarball := \
+	$(#) NOT IMPLEMENTED
 
-private $(PACKAGE) : archive = \
-	#NOT IMPLEMENTED
+private $(PACKAGE) : archive := \
+	$(#) NOT IMPLEMENTED
 
-private $(PACKAGE) : test = \
-	#NOT IMPLEMENTED
+private $(PACKAGE) : test := \
+	$(#) NOT IMPLEMENTED
 
 # NOTE:
 #	On building tests... Each test should be hosted within a chroot of the
@@ -119,7 +119,7 @@ private $(PACKAGE) : test = \
 #	packages to contain. I may be replacing this with a prototype variable
 #	in the near future, but for now I can't get the syntax to work correctly
 #
-$(eval private $(PACKAGE): bake = $$($(mode)))
+$(eval private $(PACKAGE): bake := $$($(mode)))
 $(PACKAGE): ;
 	@ # Debugging Controller...
 	@ # If you wish to see each line executed simply use:

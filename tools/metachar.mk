@@ -7,6 +7,10 @@
 #
 
 # XXX: META-characters
+override HASHTAG := \#
+override $(HASHTAG) := \#
+
+override ATYSYMBOL := @
 override COMMA := ,
 override EMPTY :=
 override SPACE := $(EMPTY) $(EMPTY)
